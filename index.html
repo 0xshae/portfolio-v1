@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>shae's page</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100%;
+            height: auto;
+        }
+        
+        body {
+            font-size: 85%;
+            display: flex;
+            flex-direction: column;
+            overscroll-behavior: none;
+        }
+
+        :root {
+            --bg-color: #000000;
+            --rust-orange: #0ae1f9;
+            --rust-orange-glow: #21e6fc;
+            --neon-blue: #2fe6fa;
+            --neon-purple: #85fc6f;
+            --text-color: #e0e0e0;
+            --glass-bg: rgba(20, 20, 30, 0.95); /* Increased opacity for better visibility */
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --font-mono: 'Space Mono', 'Fira Code', monospace;
+            --font-sans: 'Space Mono', 'Fira Code', monospace;
+        }
+
+        @font-face {
+            font-family: 'Metrophobic';
+            src: url('https://cdnjs.cloudflare.com/ajax/libs/webfonts/1.0.0/fonts/Metrophobic/woff2/Metrophobic.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        canvas#bg-canvas {
+            display: block;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .section-title {
+            font-family: var(--font-mono);
+            font-size: 36px;
+            margin-bottom: 24px;
+            font-weight: 700;
+            position: relative;
+            display: inline-block;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -1px;
+            text-transform: lowercase;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 32px;
+            right: 32px;
+            background: rgba(23, 23, 23, 0.329);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 8px 0;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .navbar__menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .navbar__item {
+            position: relative;
+        }
+
+        .navbar__link {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            width: 40px;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .navbar__link span {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(8px);
+            margin-top: 4px;
+            opacity: 0;
+            pointer-events: none;
+            color: var(--neon-blue);
+            background: rgba(23, 23, 23, 0.9);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        .navbar__link:hover {
+            color: var(--neon-blue);
+        }
+
+        .navbar:not(:hover) .navbar__link:focus span,
+        .navbar__link:hover span {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 1024px) {
+            .navbar {
+                top: 24px;
+                right: 24px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                top: 16px;
+                right: 16px;
+                padding: 6px;
+            }
+            
+            .navbar__link {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                top: 12px;
+                right: 12px;
+                padding: 4px;
+            }
+            
+            .navbar__link {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        section {
+            min-height: auto;
+            padding-top: 120px;
+            padding-bottom: 10px;
+            padding-left: 32px;
+            padding-right: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 60%;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            position: relative;
+            z-index: 10;
+            padding: 0px 20px;
+            
+        }
+
+        .section-subtitle {
+            font-family: var(--font-sans);
+            font-size: 20px;
+            margin-bottom: 24px;
+            opacity: 0.7;
+            max-width: 800px;
+            letter-spacing: 0.5px;
+            text-align: left;
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        /* About section */
+        #about {
+            background-color: transparent;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .about-text {
+            font-size: 18px;
+            line-height: 1.7;
+            text-align: left;
+        }
+
+        .about-text p {
+            margin-bottom: 24px;
+        }
+        /*
+            .skill-tag {
+            text-transform: lowercase;
+            background: rgba(244, 102, 35, 0.1);
+            border: 1px solid rgba(244, 102, 35, 0.2);
+            border-radius: 50px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-family: var(--font-mono);
+            color: var(--rust-orange);
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: rgba(244, 102, 35, 0.2);
+            transform: translateY(-2px);
+        }
+        */
+
+        .terminal-window {
+            background: rgba(23, 23, 23, 0.329);
+            border-radius: 8px;
+            padding: 24px;
+            margin: 24px 0;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            color: var(--neon-blue);
+            font-family: var(--font-mono);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .terminal-window:hover {
+            border-color: rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+        }
+        
+        .terminal-window::before {
+            display: none;
+        }
+        
+        .terminal-window:hover {
+            transform: translateY(-5px);
+            /* box-shadow: 0 10px 30px var(--rust-orange-glow); */
+        }
+        
+        .terminal-header {
+            display: flex;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red { background-color: #ff5f56; }
+        .dot.yellow { background-color: #ffbd2e; }
+        .dot.green { background-color: #27c93f; }
+
+        .terminal-title {
+            text-transform: lowercase;
+            margin-left: 16px;
+            font-size: 14px;
+            opacity: 0.8;
+            flex-grow: 1;
+            text-align: center;
+            color: var(--rust-orange);
+        }
+        
+        .terminal-content {
+            line-height: 1.8;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .command {
+            text-transform: lowercase;
+            color: var(--rust-orange);
+            margin-bottom: 8px;
+        }
+
+        .command::before {
+            content: '$ ';
+            opacity: 0.7;
+        }
+
+        .response {
+            text-transform: lowercase;
+            color: var(--text-color);
+            margin-bottom: 16px;
+            opacity: 0.8;
+        }
+
+        .highlight {
+            color: var(--rust-orange);
+            font-weight: 500;
+        }
+
+        .glass-card {
+            background: rgba(18, 18, 18, 0.7);
+            border: 1px solid rgba(244, 102, 35, 0.2);
+            border-radius: 8px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(244, 102, 35, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 24px 0;
+            justify-content: left;
+        }
+
+        .skill-tag {
+            text-transform: lowercase;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 50px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-family: var(--font-mono);
+            color: var(--neon-blue);
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: rgba(0, 229, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+
+        .rust-code-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .rust-code-header {
+            background: rgba(30, 30, 40, 0.9);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .rust-code-filename {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .rust-code-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .rust-code-tag {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(244, 102, 35, 0.2);
+            color: var(--rust-orange);
+        }
+
+        .rust-code {
+            background: rgba(20, 20, 25, 0.95);
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            color: #ddd;
+        }
+
+        .code-keyword {
+            color: #f46623;
+        }
+
+        .code-type {
+            color: #36c5f0;
+        }
+
+        .code-string {
+            color: #2ecc71;
+        }
+
+        .code-comment {
+            color: #888;
+            font-style: italic;
+        }
+
+        .code-function {
+            color: #e67e22;
+        }
+
+        /* Projects section */
+        #projects {
+            background-color: transparent;
+        }
+
+        .nft-card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            margin: 24px 0;
+        }
+
+        .project-card {
+            background: rgba(23, 23, 23, 0.329);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--rust-orange), transparent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+        
+        .project-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .nft-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+
+        .nft-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--rust-orange), transparent, var(--neon-blue));
+            z-index: -1;
+            border-radius: 18px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .nft-card:hover::before {
+            opacity: 1;
+        }
+
+        .project-image {
+            width: 100%;
+            height: 200px;
+            background-color: #181820;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .project-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .project-card:hover .project-image img {
+            transform: scale(1.05);
+        }
+
+        .nft-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.7s ease;
+        }
+
+        .nft-card:hover .nft-image img {
+            transform: scale(1.1);
+        }
+
+        .nft-content {
+            padding: 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-title {
+            text-transform: lowercase;
+            font-size: 22px;
+            margin-bottom: 12px;
+            color: var(--rust-orange);
+            font-family: var(--font-mono);
+        }
+
+        .project-description {
+            text-transform: lowercase;
+            font-size: 16px;
+            margin-bottom: 16px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .tech-tag {
+            text-transform: lowercase;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 50px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-family: var(--font-mono);
+            color: var(--neon-blue);
+            transition: all 0.3s ease;
+        }
+        
+        .tech-tag:hover {
+            background: rgba(0, 229, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+        
+        .project-links {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .project-link {
+            text-transform: lowercase;
+            color: var(--text-color);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 14px;
+            font-family: var(--font-mono);
+        }
+
+        .project-link:hover {
+            color: var(--rust-orange);
+            opacity: 1;
+        }
+
+        /* Experience section */
+        #experience {
+            background-color: transparent;
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 100%;
+            margin: 0;
+            width: 100%;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            top: 0;
+            bottom: 0;
+            left: 24px;
+        }
+
+        .timeline-item {
+            padding: 16px 0;
+            position: relative;
+        }
+
+        .timeline-dot {
+            display: none;
+        }
+
+        .timeline-date {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--neon-blue);
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .timeline-content {
+            background: rgba(23, 23, 23, 0.329);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .timeline-item:hover .timeline-content {
+            border-color: rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+        }
+
+        .timeline-role {
+            text-transform: lowercase;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .timeline-company {
+            text-transform: lowercase !important;
+            font-size: 16px !important ;
+            margin-bottom: 12px !important;
+            opacity: 0.8 !important;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        .timeline-company a {
+            color: var(--text-color) !important;
+            text-decoration: none !important;
+            opacity: 0.8 !important;
+            text-transform: lowercase !important;
+            font-size: 16px !important;
+            font-family: var(--font-mono);
+            transition: color 0.2s !important;
+        }
+        .timeline-company a:hover {
+            color: var(--neon-purple) !important;
+            opacity: 1 !important;
+        }
+
+        .timeline-description {
+            text-transform: lowercase;
+            font-size: 15px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        /* Web3 elements */
+        .nft-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--neon-blue);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            z-index: 2;
+        }
+
+        .nft-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: var(--neon-blue);
+            border-radius: 50%;
+            display: block;
+        }
+
+        .web3-address {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            padding: 8px 16px;
+            background: rgba(20, 20, 30, 0.6);
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .web3-address::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--rust-orange);
+            display: block;
+        }
+
+        /* Footer section */
+        .footer {
+            background: transparent;
+            padding: 40px 32px;
+            position: relative;
+            overflow: hidden;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+
+        .footer-logo {
+            text-transform: lowercase;
+            font-family: var(--font-mono);
+            font-size: 24px;
+            margin-bottom: 24px;
+            font-weight: 700;
+            color: var(--rust-orange);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            justify-content: center;
+            width: 100%;
+            padding: 0;
+        }
+
+        .social-link {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(23, 23, 23, 0.2);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .social-link:hover {
+            border-color: var(--rust-orange);
+            color: var(--rust-orange);
+            transform: translateY(-3px);
+        }
+
+        .social-link svg {
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover svg {
+            transform: scale(1.1);
+        }
+
+        .contact-button {
+            background: linear-gradient(45deg, rgba(0, 229, 255, 0.1), rgba(57, 255, 20, 0.1));
+            color: var(--neon-blue);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            padding: 12px 32px;
+            border-radius: 30px;
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .contact-button:hover {
+            background: linear-gradient(45deg, rgba(0, 229, 255, 0.2), rgba(57, 255, 20, 0.2));
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+        }
+
+        .footer-text {
+            margin-top: 24px;
+            opacity: 0.6;
+            font-size: 14px;
+        }
+
+        /* Digital noise effect */
+        .digital-noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iLjA1IiBkPSJNMCAwaDMwMHYzMDBIMHoiLz48L3N2Zz4=');
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.2;
+            mix-blend-mode: overlay;
+        }
+
+        /* Hover glow effect */
+        .hover-glow {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .hover-glow::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #f46623;
+            filter: blur(20px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: inherit;
+            z-index: -1;
+        }
+
+        .hover-glow:hover::after {
+            opacity: 1;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            .section-content {
+                width: 90%;
+                max-width: 98vw;
+                padding: 0 8px;
+            }
+            .nft-card-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            #about .section-title {
+                font-size: 48px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section-content {
+                width: 98%;
+                max-width: 100vw;
+                padding: 0 2vw;
+            }
+            .section-title {
+                font-size: 28px !important;
+            }
+            #about .section-title {
+                font-size: 36px !important;
+            }
+            .section-subtitle {
+                font-size: 16px;
+            }
+            .skills-container {
+                flex-direction: row;
+                gap: 8px;
+                justify-content: left;
+            }
+            .nft-card-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .project-card {
+                padding: 16px;
+            }
+            .footer-content {
+                padding: 0;
+                width: 100%;
+            }
+            .social-links {
+                flex-direction: row !important;
+                gap: 16px;
+                justify-content: center;
+                width: 100%;
+                padding: 0;
+            }
+            .timeline {
+                width: 100%;
+            }
+            .timeline-content {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-content {
+                width: 100%;
+                min-width: 260px;
+                max-width: 100vw;
+                padding: 0 1vw;
+            }
+            .section-title {
+                font-size: 20px !important;
+            }
+            #about .section-title {
+                font-size: 28px !important;
+            }
+            .section-subtitle {
+                font-size: 12px;
+            }
+            .skills-container {
+                flex-direction: row;
+                gap: 4px;
+                justify-content: left;
+            }
+            .project-title, .timeline-role {
+                font-size: 16px;
+            }
+            .footer-logo {
+                font-size: 16px;
+            }
+            .footer-content {
+                padding: 0;
+                width: 100%;
+            }
+            .social-links {
+                flex-direction: row !important;
+                gap: 8px;
+                justify-content: center;
+                width: 100%;
+                padding: 0;
+            }
+            .contact-button {
+                width: 100%;
+                font-size: 14px;
+                padding: 8px 0;
+            }
+            .project-card {
+                padding: 10px;
+            }
+            .timeline {
+                width: 100%;
+            }
+            .timeline-content {
+                width: 100%;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 5px rgba(0, 229, 255, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(57, 255, 20, 0.8); }
+        }
+
+        .glow-text {
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .nft-holographic {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nft-holographic::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0) 40%,
+                rgba(255, 255, 255, 0.4) 50%,
+                rgba(255, 255, 255, 0) 60%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(25deg);
+            transition: all 0.5s;
+            opacity: 0;
+        }
+
+        .nft-card:hover .nft-holographic::after {
+            animation: holographic 1.5s ease infinite;
+            opacity: 1;
+        }
+
+        @keyframes holographic {
+            0% {
+                top: -50%;
+                left: -50%;
+            }
+            100% {
+                top: 150%;
+                left: 150%;
+            }
+        }
+
+        /* Pixel dust effect */
+        .pixel-dust {
+            pointer-events: none;
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--rust-orange);
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 3s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            25% {
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 0.4;
+            }
+            75% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100px) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        /* Update the about section title size */
+        #about .section-title {
+            font-size: 54px; /* Larger size for the main title */
+        }
+
+        .wallet-address {
+            text-transform: lowercase;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 50px;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-family: var(--font-mono);
+            color: var(--neon-blue);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wallet-address::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neon-blue);
+            display: block;
+        }
+
+        .wallet-full {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(8px);
+            background: rgba(23, 23, 23, 0.9);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .wallet-address:hover {
+            background: rgba(0, 229, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+
+        .wallet-address:hover .wallet-full {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .wallet-address {
+                align-self: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- WebGL Canvas Background -->
+    <canvas id="bg-canvas"></canvas>
+    
+    <!-- Digital Noise Overlay -->
+    <div class="digital-noise"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <ul class="navbar__menu">
+            <li class="navbar__item">
+                <a href="#about" class="navbar__link" aria-label="About">
+                    <!-- User Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 20c0-4 8-4 8-4s8 0 8 4"/>
+                    </svg>
+                    <span>about</span>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#projects" class="navbar__link" aria-label="Projects">
+                    <!-- Code Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                    </svg>
+                    <span>projects</span>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#skills" class="navbar__link" aria-label="Skills">
+                    <!-- Tool/Wrench Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.7 6.3a5 5 0 0 0-6.4 6.4l-6 6 2.8 2.8 6-6a5 5 0 0 0 6.4-6.4"/>
+                    </svg>
+                    <span>skills</span>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#experience" class="navbar__link" aria-label="Experience">
+                    <!-- Briefcase Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                        <path d="M16 3v4M8 3v4M2 11h20"/>
+                    </svg>
+                    <span>experience</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="section-content">
+            <div class="header-container">
+                <h1 class="section-title" style="margin-bottom: 0px;">hi, this is shae.</h1>
+                <div class="wallet-address">
+                    <span class="wallet-short">0x71C...92fF</span>
+                    <span class="wallet-full">0x71C7656EC7ab88b098defB751B7401B5f6d8976f</span>
+                </div>
+            </div>
+            <p class="section-subtitle">rust programmer × solana maxi × wannabe nft artist</p>
+            
+            <div class="about-grid">
+                <div class="about-text">
+                    <div class="terminal-window">
+                        <div class="terminal-header">
+                            <div class="terminal-dots">
+                                <div class="dot red"></div>
+                                <div class="dot yellow"></div>
+                                <div class="dot green"></div>
+                            </div>
+                            <div class="terminal-title">about.sh</div>
+                        </div>
+                        <div class="terminal-content">
+                            <p class="command">whoami</p>
+                            <p class="response">backend engineer specializing in decentralized systems & cryptography. obsessed about solving real life problems. I use rust and typescript to build blockchain infra and smart contracts. previously a community person with experience as an ecosystem builder and growth driver.     
+                            </p>
+                            <div class="web3-address">0x71C...92fF</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" style="padding-top: 10px;">
+        <div class="section-content">
+            <h1 class="section-title">~/projects</h1>
+            <div class="nft-card-grid">
+                <!-- Project 1 -->
+                <div class="project-card">
+                    <!-- <div class="project-image">
+                        <img src="/api/placeholder/400/240" alt="Quantum Compiler Project">
+                    </div> -->
+                    <h3 class="project-title">sentiment oracle</h3>
+                    <p class="project-description">
+                       fullstack blockchain oracle that stores cryptographically verified sentiment analysis data of financial assets with API access for clients. frontend app visualized data in correlation with real time price movements. 
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">rust</span>
+                        <span class="tech-tag">actix web</span>
+                        <span class="tech-tag">solana</span>
+                        <span class="tech-tag">twscrape</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="https://github.com/0xshae/sentiment-oracle/tree/main" class="project-link" target="_blank">[ View Code ]</a>
+                        <a href="#" class="project-link">[ Demo ]</a>
+                    </div>
+                </div>
+                
+                <!-- Project 2 -->
+                <div class="project-card">
+                    <!-- <div class="project-image">
+                        <img src="/api/placeholder/400/240" alt="Distributed Cache Project">
+                    </div> -->
+                    <h3 class="project-title">foc maze game</h3>
+                    <p class="project-description">
+                        a fully on-chain maze solving game built on the solana blockchain. Players navigate through procedurally generated mazes, collecting coins and emeralds while avoiding fire hazards.
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">rust</span>
+                        <span class="tech-tag">solana</span>
+                        <span class="tech-tag">unity</span>
+                        <span class="tech-tag">webgl</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="https://github.com/0xshae/maze-game/tree/main" class="project-link" target="_blank">[ View Code ]</a>
+                        <a href="#" class="project-link">[ Documentation ]</a>
+                    </div>
+                </div>
+                
+                <!-- Project 3 -->
+                <div class="project-card">
+                    <!-- <div class="project-image">
+                        <img src="/api/placeholder/400/240" alt="Neural Audio Synthesis Project">
+                    </div> -->
+                    <h3 class="project-title">x elections</h3>
+                    <p class="project-description">
+                        vote for your favourite x creators using actions and blinks on solana.
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">rust</span>
+                        <span class="tech-tag">anchor</span>
+                        <span class="tech-tag">actions</span>
+                        <span class="tech-tag">blinks</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="https://github.com/0xshae/twitter-elections" class="project-link" target="_blank">[ View Code ]</a>
+                        <a href="#" class="project-link">[ Try It ]</a>
+                    </div>
+                </div>
+                
+                <!-- Project 4 -->
+                 <div class="project-card">
+                    <h3 class="project-title">vit blockchain communtiy</h3>
+                    <p class="project-description">
+                        vit vellore's first web3 community with 1400 students. organised 25+ events and hackathons. distributed 23k USD in sponsorships and prizes. 
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">devrel</span>
+                        <span class="tech-tag">management</span>
+                        <span class="tech-tag">strategy</span>
+                        <span class="tech-tag">web3</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link" target="_blank">[ Visit Page ]</a>
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Skills Section -->
+    <section id="skills" style="padding-top: 10px;">
+        <div class="section-content">
+            <h1 class="section-title">~/skills</h1>
+            <div class="skills-container">
+                <div class="skill-tag">rust/ wasm</div>
+                <div class="skill-tag">EVMS</div>
+                <div class="skill-tag">solana</div>
+                <div class="skill-tag">smart contracts</div>
+                <div class="skill-tag">cryptography</div>
+                <div class="skill-tag">web3.js</div>
+                <div class="skill-tag">ZK-SNARKS</div>
+                <div class="skill-tag">actix</div>
+                <div class="skill-tag">typescript</div>
+                <div class="skill-tag">git</div>
+                <div class="skill-tag">next.js</div>
+                <div class="skill-tag">defi</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" style="padding-top: 10px;">
+        <div class="section-content">
+            <h1 class="section-title">~/experience</h1>            
+            <div class="timeline">
+                <!-- Experience 1 -->
+                <div class="timeline-item">
+                        <div class="timeline-date">3/2022 — 12/2024</div>
+                    <div class="timeline-content">
+                        <div class="header-container">
+                            <h3 class="timeline-role">co-founder and chairperson</h3>
+                            <div class="timeline-date">[vit vellore, india]</div>
+                        </div>
+                        <h4 class="timeline-company"><a href="#" class="timeline-link" target="_blank">vit blockchain community</a></h4>
+                        <p class="timeline-description">
+                            founded and led a community of 1400 web3 enthusiasts in vellore, india. our team's initiative helped create 25 developer workshops and hackathons, distribute more than $23,000 USD in prizes and dev support, facilitate job placements for multiple student builders.  
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Experience 2 -->
+                <div class="timeline-item">
+                    <div class="timeline-date">09/23 - 01/2024</div>
+                    <div class="timeline-content">
+                        <div class="header-container">
+                            <h3 class="timeline-role">software engineer intern</h3>
+                            <div class="timeline-date">[gurgaon, india]</div>
+                        </div>
+                        <h4 class="timeline-company"><a href="#" class="timeline-link" target="_blank">airtel payments bank</a></h4>
+                        <p class="timeline-description">
+                            built a web-based e-banking portal for Airtel's internal use, integrating features like digital account access and online payments. Used Python, Django, JavaScript, and AJAX to develop frontend and backend modules, collaborated in Agile sprints to deliver user-facing features aligned with real business use cases.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Experience 3 -->
+                <div class="timeline-item">
+                    <div class="timeline-date">07/2023 — 02/2024</div>
+                    <div class="timeline-content">
+                        <div class="header-container">
+                            <h3 class="timeline-role">Marketing & Content Manager</h3>
+                            <div class="timeline-date">[dubai, united arab emirates]</div>
+                        </div>
+                        <h4 class="timeline-company"><a href="#" class="timeline-link" target="_blank">shardeum</a></h4>
+                        <p class="timeline-description">
+                            Led grassroots developer engagement through the Backpacking India campaign, organizing 20+ community events across 23 states of india and managing global connections with contributors from Nigeria to the U.S. Drove content and marketing strategy by designing campaigns, collaborating with design teams on visuals, and collecting feedback to align ecosystem messaging with developer needs.
+                        </p>
+                    </div>
+                </div>
+                <!--Expreience 4-->
+                <div class="timeline-item">
+                    <div class="timeline-date">09/2023 — 11/2023</div>
+                    <div class="timeline-content">
+                        <div class="header-container">
+                            <h3 class="timeline-role">blockchain researcher & developer</h3>
+                            <div class="timeline-date">[new delhi, india]</div>
+                        </div>
+                        <h4 class="timeline-company"><a href="#" class="timeline-link" target="_blank">national institution for transforming india, government of india</a></h4>
+                        <p class="timeline-description">
+                            worked directly under the principal scientific advisor to the prime minister of india to boost india's global innovation rank through the utilization of blockchain technologies. presented a research proposal to integrate onchain solutions for centralized identity infrastructures of india using zk rollups and polygon ids. helped prototype an essential R&D platform for GoI. 
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="social-links">
+                <a href="#" class="social-link" aria-label="GitHub">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                    </svg>
+                </a>
+                <a href="#" class="social-link" aria-label="Twitter">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                    </svg>
+                </a>
+                <a href="#" class="social-link" aria-label="LinkedIn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                        <rect x="2" y="9" width="4" height="12"></rect>
+                        <circle cx="4" cy="4" r="2"></circle>
+                    </svg>
+                </a>
+            </div>
+            <p class="footer-text">© 2025 · Shagun Prasad</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Three.js background
+        const initThreeBackground = () => {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('bg-canvas'),
+                alpha: true
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            
+            // Add particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1500;
+            
+            const posArray = new Float32Array(particlesCount * 3);
+            
+            for(let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 15;
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            // Material with custom shader
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.02,
+                color: 0x00e5ff,
+                transparent: true,
+                opacity: 0.8,
+            });
+            
+            // Create particles mesh
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+            
+            // Position camera
+            camera.position.z = 5;
+            
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            // Animation loop
+            const animate = () => {
+                requestAnimationFrame(animate);
+                
+                particlesMesh.rotation.x += 0.0005;
+                particlesMesh.rotation.y += 0.0002;
+                
+                renderer.render(scene, camera);
+            };
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            animate();
+        };
+        
+        // Initialize GSAP animations
+        const initGsapAnimations = () => {
+            // Register ScrollTrigger plugin
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Animate sections on scroll
+            const sections = document.querySelectorAll('.section-content');
+            
+            sections.forEach(section => {
+                gsap.to(section, {
+                    scrollTrigger: {
+                        trigger: section,
+                        start: "top 80%",
+                        end: "top 50%",
+                        toggleClass: "fade-in",
+                        once: true
+                    }
+                });
+            });
+            
+            // Animate navbar
+            gsap.fromTo('.navbar', 
+                { y: -100, opacity: 0 }, 
+                { y: 0, opacity: 1, duration: 1, ease: "power3.out", delay: 0.3 }
+            );
+            
+            // Animate project cards with stagger
+            gsap.from('.nft-card', {
+                scrollTrigger: {
+                    trigger: '#projects',
+                    start: "top 70%",
+                },
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.2,
+                ease: "power2.out"
+            });
+            
+            // Animate timeline items with stagger
+            gsap.from('.timeline-item', {
+                scrollTrigger: {
+                    trigger: '#experience',
+                    start: "top 70%",
+                },
+                x: -50,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.3,
+                ease: "power2.out"
+            });
+        };
+        
+        // Initialize all scripts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initThreeBackground();
+            initGsapAnimations();
+            feather.replace();
+            
+            // Smooth scroll for navigation links
+            document.querySelectorAll('.navbar__link').forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    const href = link.getAttribute('href');
+                    const offsetTop = document.querySelector(href).offsetTop;
+                    
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: "smooth"
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
